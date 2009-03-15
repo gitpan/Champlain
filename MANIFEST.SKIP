@@ -1,0 +1,9 @@
+^build/
+\.svn
+^Makefile$
+^Makefile[.]old$
+^xs/.*[.][co]$
+^blib/
+^Champlain[.]bs
+^Champlain-
+^pm_to_blib$
