@@ -67,7 +67,13 @@ gains maturity. These bindings try to provide as much coverage from the C
 library as possible. Don't be surprised if the API changes within the next
 releases this is normal as B<libchamplain IS NOT yet API nor ABI frozen>.
 
-It's quite probable that bugs will be exposed, please report all bugs found.
+It's quite probable that bugs will be exposed, please try to report all bugs
+found through GNOME's Bugzilla
+L<http://bugzilla.gnome.org/simple-bug-guide.cgi?product=champlain> (when
+prompted for a component simply choose I<bindings>). GNOME's bug tracking tool
+is preferred over RT because the bugs found in the library could impact
+libchamplain or the other bindings. Of course all bugs entered through RT will
+be acknowledged and addressed.
 
 =head1 AUTHORS
 
@@ -86,7 +92,7 @@ at your option, any later version of Perl 5 you may have available.
 use warnings;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use base 'DynaLoader';
 use Exporter 'import';
