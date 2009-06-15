@@ -1,16 +1,24 @@
 Revision history for Champlain
 
 
+0.04 Mon Jun 15 23:48:13 CEST 2009
+	Bindings for libchamplain 0.3.3.
+	More complete unit tests coverage.
+	New examples: capitals.pl, image.pl, animated-marker.pl and polygons.pl.
+	Champlain::MapSourceFactory and the factory's constructor accept arguments.
+
+
 0.03 Sun Mar 22 22:32:44 CET 2009
-	Fixed the binding of champlain_view_embed_get_view()
-	Added support for Champlain::ZoomLevel
-	Added unit tests
+	Fixed the binding of champlain_view_embed_get_view().
+	Added support for Champlain::ZoomLevel.
+	Added unit tests.
 
 
 0.02 Tue Mar 17 09:18:08 CET 2009
 	Cleanup in the project.
-	Added champlain_view_embed_get_view()
+	Added champlain_view_embed_get_view().
 
 
 0.01 Sat Mar 14 10:33:12 CET 2009
 	First version, released on an unsuspecting world.
+

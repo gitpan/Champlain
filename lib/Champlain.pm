@@ -31,7 +31,7 @@ Champlain - Map rendering canvas
 
 Champlain is a Perl binding for the C library libchamplain which provides a
 canvas widget based on Clutter that displays maps from various free map sources
-such as I<OpenStreetMap>, I<OpenArialMap> and I<Maps for free>.
+such as I<OpenStreetMap>, I<OpenAerialMap> and I<Maps for free>.
 
 If the C library is compiled with GTK support then the map widget can also be
 embedded in any GTK application.
@@ -92,11 +92,12 @@ at your option, any later version of Perl 5 you may have available.
 use warnings;
 use strict;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use base 'DynaLoader';
 use Exporter 'import';
 
+use Clutter;
 
 use constant {
 	MIN_LAT  => -90,
@@ -108,14 +109,44 @@ use constant {
 
 our %EXPORT_TAGS = (
 	coords => [qw(MIN_LAT MAX_LAT MIN_LONG MAX_LONG)],
+	maps => [qw(
+		MAP_OSM_MAPNIK
+		MAP_OSM_OSMARENDER
+		MAP_OSM_CYCLE_MAP
+		MAP_OAM
+		MAP_MFF_RELIEF
+	)],
 );
 
 our @EXPORT_OK = map { @{ $_ } } values %EXPORT_TAGS;
+
+
+sub MAP_OSM_MAPNIK {
+	return Champlain::MapSourceFactory->OSM_MAPNIK;
+}
+
+sub MAP_OSM_OSMARENDER {
+	return Champlain::MapSourceFactory->OSM_OSMARENDER;
+}
+
+sub MAP_OSM_CYCLE_MAP {
+	return Champlain::MapSourceFactory->OSM_CYCLE_MAP;
+}
+
+sub MAP_OAM {
+	return Champlain::MapSourceFactory->OAM;
+}
+
+sub MAP_MFF_RELIEF {
+	return Champlain::MapSourceFactory->MFF_RELIEF;
+}
 
 
 sub dl_load_flags { $^O eq 'darwin' ? 0x00 : 0x01 }
 
 __PACKAGE__->bootstrap($VERSION);
 
-1;
 
+package Champlain::MapSourceDesc;
+
+1;

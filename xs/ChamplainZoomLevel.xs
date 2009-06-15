@@ -3,12 +3,10 @@
 
 MODULE = Champlain::ZoomLevel  PACKAGE = Champlain::ZoomLevel  PREFIX = champlain_zoom_level_
 
-PROTOTYPES: DISABLE
-
 
 ChamplainZoomLevel*
 champlain_zoom_level_new (class)
-	C_ARGS:
+	C_ARGS: /* No args */
 
 
 gint
@@ -52,4 +50,5 @@ champlain_zoom_level_tile_count (ChamplainZoomLevel *self)
 
 
 ChamplainTile*
-champlain_zoom_level_get_nth_tile (ChamplainZoomLevel *self, guint index);
+champlain_zoom_level_get_nth_tile (ChamplainZoomLevel *self, guint index)
+

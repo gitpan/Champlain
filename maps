@@ -1,6 +1,7 @@
 CHAMPLAIN_TYPE_VIEW                ChamplainView              GObject  Champlain::View
-CHAMPLAIN_TYPE_VIEW_SCROLL_MODE    ChamplainScrollMode        GEnum    Champlain::ScrollMode
+CHAMPLAIN_TYPE_SCROLL_MODE         ChamplainScrollMode        GEnum    Champlain::ScrollMode
 CHAMPLAIN_TYPE_LAYER               ChamplainLayer             GObject  Champlain::Layer
+CHAMPLAIN_TYPE_BASE_MARKER         ChamplainBaseMarker        GObject  Champlain::BaseMarker
 CHAMPLAIN_TYPE_MARKER              ChamplainMarker            GObject  Champlain::Marker
 CHAMPLAIN_TYPE_MAP_SOURCE          ChamplainMapSource         GObject  Champlain::MapSource
 CHAMPLAIN_TYPE_ZOOM_LEVEL          ChamplainZoomLevel         GObject  Champlain::ZoomLevel
@@ -8,3 +9,8 @@ CHAMPLAIN_TYPE_TILE                ChamplainTile              GObject  Champlain
 CHAMPLAIN_TYPE_NETWORK_MAP_SOURCE  ChamplainNetworkMapSource  GObject  Champlain::NetworkMapSource
 CHAMPLAIN_TYPE_MAP_PROJECTION      ChamplainMapProjection     GEnum    Champlain::MapProjection
 CHAMPLAIN_TYPE_STATE               ChamplainState             GEnum    Champlain::State
+CHAMPLAIN_TYPE_MAP_SOURCE_FACTORY  ChamplainMapSourceFactory  GObject  Champlain::MapSourceFactory
+CHAMPLAIN_TYPE_CACHE               ChamplainCache             GObject  Champlain::Cache
+CHAMPLAIN_TYPE_MAP_SOURCE_DESC     ChamplainMapSourceDesc     GBoxed   Champlain::MapSourceDesc
+CHAMPLAIN_TYPE_POINT               ChamplainPoint             GBoxed   Champlain::Point
+CHAMPLAIN_TYPE_POLYGON             ChamplainPolygon           GObject  Champlain::Polygon

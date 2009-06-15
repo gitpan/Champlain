@@ -44,24 +44,61 @@ sub main {
 	$buttons->add($button);
 	$button->set_position($width + $PADDING, 0);
 	
-	
-	# Create the markers and marker layer
-	my $layer = create_marker_layer($map);
-	$map->add_layer($layer);
+	# Draw on the map
+	draw_polygons($map);
 	
 	# Finish initializing the map view
-	$map->set_property("zoom-level", 7);
+	$map->set_property("zoom-level", 8);
 	$map->center_on(45.466, -73.75);
 	
 	# Middle click to get the location in the map
 	$map->set_reactive(TRUE);
-	$map->signal_connect_after("button-release-event", \&map_view_button_release_cb, $map);
 
 	$stage->show_all();
 	
 	Clutter->main();
 	
 	return 0;
+}
+
+
+#
+# Draw some polygons over the map.
+#
+sub draw_polygons {
+	my ($map) = @_;
+	
+	my $polygon;
+	
+	# Draw a line
+	$polygon = Champlain::Polygon->new();
+	
+	# Cheap approximation of Highway 10 aka "La 10"
+	$polygon->append_point(45.4095, -73.3197);
+	$polygon->append_point(45.4104, -73.2846);
+	$polygon->append_point(45.4178, -73.2239);
+	$polygon->append_point(45.4176, -73.2181);
+	$polygon->append_point(45.4151, -73.2126);
+	$polygon->append_point(45.4016, -73.1926);
+	$polygon->append_point(45.3994, -73.1877);
+	$polygon->append_point(45.4000, -73.1815);
+	$polygon->append_point(45.4151, -73.1218);
+
+	$polygon->set_stroke_width(5.0);
+	$map->add_polygon($polygon);
+
+
+	# Draw a polygon
+	$polygon = Champlain::Polygon->new();
+	$polygon->append_point(45.1386, -73.9196);
+	$polygon->append_point(45.1229, -73.8991);
+	$polygon->append_point(45.0946, -73.9531);
+	$polygon->append_point(45.1085, -73.9714);
+	$polygon->append_point(45.1104, -73.9761);
+
+	$polygon->set_fill(TRUE);
+	$polygon->set("closed-path", TRUE);
+	$map->add_polygon($polygon);
 }
 
 
@@ -127,15 +164,6 @@ sub create_marker_layer {
 
 	$layer->show();
 	return $layer;
-}
-
-
-sub marker_button_release_cb {
-	my ($marker, $event, $map) = @_;
-	return FALSE unless $event->button == 1 && $event->click_count == 1;
-
-	print "Montreal was clicked\n";
-	return TRUE;
 }
 
 
