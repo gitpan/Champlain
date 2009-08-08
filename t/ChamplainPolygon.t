@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Clutter::TestHelper tests => 48;
+use Clutter::TestHelper tests => 50;
 
 use Champlain;
 
@@ -30,6 +30,9 @@ sub test_empty {
 	$polygon->clear_points();
 	is_deeply(\@points, [], "No points on a cleared polygon");
 	
+	$polygon->clear_points();
+	is_deeply(\@points, [], "No points on a cleared polygon (2 times)");
+
 	is_color($polygon->get_fill_color, $DEFAULT_FILL_COLOR, "fill_color is set on a new polygon");
 	is_color($polygon->get_stroke_color, $DEFAULT_STROKE_NAME, "stroke_color is set on a new polygon");
 	
@@ -88,6 +91,8 @@ sub test_points {
 	my $polygon = Champlain::Polygon->new();
 	isa_ok($polygon, 'Champlain::Polygon');
 
+	my @remove = ();
+
 	$polygon->append_point(8, 4);
 	is_polygon(
 		$polygon,
@@ -97,7 +102,7 @@ sub test_points {
 		"append_point()"
 	);
 
-	$polygon->append_point(4, 9);
+	push @remove, $polygon->append_point(4, 9);
 	is_polygon(
 		$polygon,
 		[
@@ -130,7 +135,7 @@ sub test_points {
 		"polygon: 4 points"
 	);
 
-	$polygon->insert_point(1, 2, 0);
+	push @remove, $polygon->insert_point(1, 2, 0);
 	is_polygon(
 		$polygon,
 		[
@@ -157,7 +162,7 @@ sub test_points {
 		"insert_point() at the end"
 	);
 
-	$polygon->insert_point(30, 240, 17);
+	push @remove, $polygon->insert_point(30, 240, 17);
 	is_polygon(
 		$polygon,
 		[
@@ -172,15 +177,27 @@ sub test_points {
 		"insert_point() past the end"
 	);
 
-	# Clear the polygon (it should be empty after)
-	TODO: {
-		local $TODO = "Bug in libchamplain";
-		$polygon->clear_points();
-		is_polygon($polygon, [], "clear_points()");
-
-		$polygon->append_point(100, 200);
-		is_polygon($polygon, [100, 200], "add_point on a cleared polygon");
+	foreach my $point (@remove) {
+		$polygon->remove_point($point);
 	}
+	is_polygon(
+		$polygon,
+		[
+			8, 4,
+			7, 10,
+			5, 3,
+			10, 20,
+		],
+		"remove_point()"
+	);
+
+
+	# Clear the polygon (it should be empty after)
+	$polygon->clear_points();
+	is_polygon($polygon, [], "clear_points()");
+
+	$polygon->append_point(100, 200);
+	is_polygon($polygon, [100, 200], "add_point on a cleared polygon");
 }
 
 
