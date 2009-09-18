@@ -12,9 +12,9 @@ Where I<key> is a valid Flickr key.
 
 =head1 DESCRIPTION
 
-This sample scripts shows how to interact with the Flickr API and to display
+This sample script shows how to interact with the Flickr API and to display
 thumbnails for pictures near a location. The Flickr API interaction is triggered
-when a middle-click in done in a location  on the map.
+when a middle-click in done in a location on the map.
 
 =cut
 
@@ -23,8 +23,8 @@ use warnings;
 use open ':std', ':utf8';
 
 use Glib qw(TRUE FALSE);
-use Clutter qw(-gtk-init);
-use Gtk2 qw(-init);
+use Gtk2;
+use Clutter qw(-threads-init -init);
 use Champlain;
 use XML::LibXML;
 use Carp;
@@ -33,6 +33,8 @@ use URI::QueryParam;
 use Data::Dumper;
 use FindBin;
 use File::Spec;
+
+my $LABEL;
 
 exit main();
 
@@ -43,38 +45,43 @@ sub main {
 
 	local $| = 1;
 
-	my $window = Gtk2::Window->new();
-	$window->set_border_width(10);
-	$window->set_title("Champlain + Flickr - Demo");
-	$window->signal_connect('destroy' => sub { Gtk2->main_quit() });
-
-	my $vbox = Gtk2::VBox->new(FALSE, 10);
+	my $stage = Clutter::Stage->get_default();
+	$stage->set_size(800, 600);
 
 	# Create the map view
-	my $gtk2_map = Gtk2::ChamplainEmbed->new();
-	my $map = $gtk2_map->get_view();
+	my $map = Champlain::View->new();
 	$map->center_on(47.130885, -70.764141);
 	$map->set_scroll_mode('kinetic');
 	$map->set_zoom_level(5);
-	$gtk2_map->set_size_request(640, 480);
+	$map->set_size($stage->get_size);
+	$stage->add($map);
 
 	# Create the markers and marker layer
 	my $layer = Champlain::Layer->new();
 	$layer->show();
 	$map->add_layer($layer);
 
-	my $viewport = Gtk2::Viewport->new();
-	$viewport->set_shadow_type('etched-in');
-	$viewport->add($gtk2_map);
+	$LABEL = make_label();
+	$LABEL->hide();
+	$map->add($LABEL);
 
-	$vbox->add($viewport);
+	$stage->show_all();
 
-	$window->add($vbox);
-	$window->show_all();
 
+	#
+	# This is the default icon that will be displayed while the flickr a image
+	# is being downloaded. This exact actor ($icon) will never be displayed,
+	# instead copies of it (clones) will be displayed.
+	#
+	# Since clutter 1.0 an actor can only be cloned if it is added to the stage.
+	# It doesn't need to be visible, just to be in the stage.
+	#
 	my $icon = Clutter::Texture->new(
 		File::Spec->catfile($FindBin::Bin, 'images', 'flickr.png')
 	);
+	$stage->add($icon);
+	$icon->hide();
+
 
 	# Middle click on a location to trigger the Flickr interaction
 	$map->set_reactive(TRUE);
@@ -85,7 +92,7 @@ sub main {
 	};
 	$map->signal_connect_after("button-release-event", \&flickr_search, $data);
 
-	Gtk2->main();
+	Clutter->main();
 
 	return 0;
 }
@@ -100,6 +107,8 @@ sub flickr_search {
 
 	my ($latitude, $longitude) = $map->get_coords_from_event($event);
 	print "Lookup for ($latitude, $longitude)\n";
+	$LABEL->set_text("Querying flickr...");
+	$LABEL->show();
 
 	my $args = {
 		lat    => $latitude,
@@ -140,7 +149,7 @@ sub flickr_photos_search_callback {
 		my $longitude = $photo_node->getAttribute('longitude');
 
 		# Add a marker for the image
-		my $icon = Clutter::Texture::Clone->new($data->{icon});
+		my $icon = Clutter::Clone->new($data->{icon});
 		my $marker = Champlain::Marker->new_with_image($icon);
 		$marker->set_position($latitude, $longitude);
 		$data->{layer}->add($marker);
@@ -152,6 +161,12 @@ sub flickr_photos_search_callback {
 		};
 
 		push @photos, $photo;
+	}
+
+	if (! @photos) {
+		$LABEL->set_text("No pictures found!");
+		$LABEL->show();
+		return;
 	}
 
 	$data->{photos} = \@photos;
@@ -166,8 +181,12 @@ sub flickr_photos_search_callback {
 sub flickr_photos_getSizes {
 	my ($soup, $data) = @_;
 	if (@{ $data->{photos} } == 0) {
+		$LABEL->hide();
 		return FALSE;
 	}
+
+	$LABEL->set_text("Photos to load: " . @{ $data->{photos} });
+	$LABEL->show();
 
 	my $photo = pop @{ $data->{photos} };
 	$data->{photo} = $photo;
@@ -249,6 +268,19 @@ sub flickr_download_photo_callback {
 
 	# Add a marker for the image
 	$marker->set_image($texture);
+}
+
+
+#
+# Creates a label that shows what's going on.
+#
+sub make_label {
+
+	my $black = Clutter::Color->new(0x00, 0x00, 0x00, 0xff);
+	my $button_text = Clutter::Text->new("Sans 16", '', $black);
+	$button_text->set_position(10, 10);
+
+	return $button_text;
 }
 
 
