@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Champlain
-version:             0.09
+version:             0.10
 abstract:            Map rendering canvas
 license:             perl, lgpl
 author:              
