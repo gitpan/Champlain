@@ -22,27 +22,52 @@ sub main {
 	mkdir 'build', 0777;
 	
 	# The version of libchamplain (and friends) for which this module can built against
-	my $champlain_version = '0.4';
+	my $champlain_version = '0.5';
 	
 	# Find libchamplain
 	my @typemaps = ();
 	my @deps = ('Glib');
 	my %pkgconfig;
+	my %requires;
 
 	eval {
 		%pkgconfig = ExtUtils::PkgConfig->find("champlain-$champlain_version");
-		# All XS files that start with Champlain are for libchamplain
-		push @XS_FILES, <xs/Champlain*.xs>;
+		push @XS_FILES, Glib::MakeHelper->read_source_list_file('xs-champlain');
 		push @typemaps, 'maps';
 		push @deps, 'Clutter';
+		$requires{Clutter} = '1.000';
 	};
 	if (my $error = $@) {
 		warn "FAIL: ", $error;
 		return;
 	}
 	
-	$DEPENDS = ExtUtils::Depends->new('Champlain', @deps);
+	# If libchamplain was compiled with memphis support
+	eval {
+		# We build the bindigns with memphis support if we find the .pc file and
+		# load the perl module successfully.
+		my %conf = ExtUtils::PkgConfig->find("champlain-memphis-$champlain_version");
+		my $version = '0.01';
+		eval "use Memphis $version; 1;" or die "$@";
+
+		$requires{Memphis} = $version;
+		$pkgconfig{cflags} .= $conf{cflags} . ' -DCHAMPLAINPERL_MEMPHIS';
+		$pkgconfig{libs} .= $conf{libs};
+
+		push @XS_FILES, Glib::MakeHelper->read_source_list_file('xs-memphis');
+		push @typemaps, 'maps-memphis';
+		push @deps, 'Memphis';
+	};
+	if (my $error = $@) {
+		warn "Ignoring the Memphis bindings ($error)";
+	}
+
+	foreach my $module (keys %requires) {
+		my $version = $requires{$module};
+		eval "use $module '$version'; 1;" or die "Can't load $module $version\n";
+	}
 	
+	$DEPENDS = ExtUtils::Depends->new('Champlain', @deps);
 	$DEPENDS->add_pm(
 		File::Spec->catfile('lib', 'Champlain.pm'),
 		File::Spec->catfile('$(INST_LIBDIR)', 'Champlain.pm'),
@@ -78,7 +103,7 @@ sub main {
 		LICENSE       => 'perl, lgpl',
 
 		PREREQ_PM     => {
-			'Clutter' => '1.0000',
+			%requires,
 		},
 		PREREQ_FATAL  => 1, # Clutter is mandatory otherwise the Makefile can't be created
 		
@@ -105,7 +130,7 @@ sub MY::postamble {
 	$postamble .= Glib::MakeHelper->postamble_docs_full(
 		DEPENDS   => $DEPENDS,
 		XS_FILES  => [ @XS_FILES ],
-		COPYRIGHT => 'Copyright (C) 2009 by Emmanuel Rodriguez'
+		COPYRIGHT => 'Copyright (C) 2009-2010 by Emmanuel Rodriguez'
 	);
 
 	return $postamble;

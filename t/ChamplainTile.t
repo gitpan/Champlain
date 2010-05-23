@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Clutter::TestHelper tests => 54;
+use Clutter::TestHelper tests => 46;
 
 use Champlain ':coords';
 use Data::Dumper;
@@ -26,10 +26,7 @@ sub test_new_full {
 	is($tile->get_y(), 75, "get_y() full tile");
 	is($tile->get_zoom_level(), 1, "get_zoom_level() full tile");
 	is($tile->get_size(), 514, "get_size() full tile");
-	is($tile->get_state(), 'init', "get_state() full tile");
-	is($tile->get_uri(), undef, "get_uri() full tile");
-	is($tile->get_filename(), undef, "get_filename() full tile");
-	isa_ok($tile->get_actor(), 'Clutter::Actor', "get_actor() full tile");
+	is($tile->get_state(), 'none', "get_state() full tile");
 	is($tile->get_content(), undef, "get_content() full tile");
 	is($tile->get_etag(), undef, "get_etag() full tile");
 	is_deeply(
@@ -37,7 +34,6 @@ sub test_new_full {
 		[undef, undef],
 		"get_modified_time() full tile"
 	);
-	is($tile->get_modified_time_string(), undef, "get_modified_time_string() full tile");
 
 	test_all_setters($tile);
 }
@@ -51,10 +47,7 @@ sub test_new_empty {
 	is($tile->get_y(), 0, "get_y() default tile");
 	is($tile->get_zoom_level(), 0, "get_zoom_level() default tile");
 	is($tile->get_size(), 0, "get_size() default tile");
-	is($tile->get_state(), 'init', "get_state() default tile");
-	is($tile->get_uri(), undef, "get_uri() default tile");
-	is($tile->get_filename(), undef, "get_filename() default tile");
-	isa_ok($tile->get_actor(), 'Clutter::Actor', "get_actor() default tile");
+	is($tile->get_state(), 'none', "get_state() default tile");
 	is($tile->get_content(), undef, "get_content() full tile");
 	is($tile->get_etag(), undef, "get_etag() full tile");
 	is_deeply(
@@ -62,7 +55,6 @@ sub test_new_empty {
 		[undef, undef],
 		"get_modified_time() full tile"
 	);
-	is($tile->get_modified_time_string(), undef, "get_modified_time_string() full tile");
 	
 	test_all_setters($tile);
 }
@@ -85,19 +77,13 @@ sub test_all_setters {
 	
 	$tile->set_state('done');
 	is($tile->get_state(), 'done', "set_state()");
-	
-	$tile->set_uri('http://localhost/tile/2/100-250.png');
-	is($tile->get_uri(), 'http://localhost/tile/2/100-250.png', "set_uri()");
-	
-	$tile->set_filename('x-100-250.png');
-	is($tile->get_filename(), 'x-100-250.png', "set_filename()");
 
 	my $actor = Clutter::Group->new();
-	$tile->set_content($actor, TRUE);
+	$tile->set_content($actor);
 	is($tile->get_content(), $actor, "set_content()");
 	
 	$tile->set_etag('http://localhost/tile/2/100-250.png');
-	is($tile->get_etag(), 'http://localhost/tile/2/100-250.png', "set_uri()");
+	is($tile->get_etag(), 'http://localhost/tile/2/100-250.png', "set_etag()");
 
 	# Set the time to now
 	$tile->set_modified_time();
@@ -105,6 +91,7 @@ sub test_all_setters {
 	is(scalar(@time), 2, "Got seconds and microseconds");
 	ok(defined $time[0], "Seconds are defined");
 	ok(defined $time[1], "Microseconds are defined");
+
 	
 	# The epoch
 	$tile->set_modified_time(0, 0);
@@ -121,4 +108,10 @@ sub test_all_setters {
 		[1247335783, 20],
 		"set_modified_time(0, 0)"
 	);
+
+	$tile->set_fade_in(FALSE);
+	is($tile->get_fade_in, FALSE, "get_fade_in");
+
+	$tile->set_fade_in(TRUE);
+	is($tile->get_fade_in, TRUE, "set_fade_in");
 }

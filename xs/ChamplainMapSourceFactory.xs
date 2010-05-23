@@ -186,3 +186,28 @@ MFF_RELIEF (class)
 
 	OUTPUT:
 		RETVAL
+
+
+#ifdef CHAMPLAINPERL_MEMPHIS
+
+const gchar*
+MEMPHIS_LOCAL_DESC (class)
+	CODE:
+		RETVAL = CHAMPLAIN_MAP_SOURCE_MEMPHIS_LOCAL;
+
+	OUTPUT:
+		RETVAL
+
+
+const gchar*
+MEMPHIS_NETWORK_DESC (class)
+	CODE:
+		RETVAL = CHAMPLAIN_MAP_SOURCE_MEMPHIS_NETWORK;
+
+	OUTPUT:
+		RETVAL
+
+#endif
+
+ChamplainMapSource*
+champlain_map_source_factory_create_cached_source (ChamplainMapSourceFactory *factory, const gchar *id)

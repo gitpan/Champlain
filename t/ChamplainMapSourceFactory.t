@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Clutter::TestHelper tests => 45;
+use Clutter::TestHelper tests => 53;
 
 use Champlain ':maps';
 
@@ -24,8 +24,18 @@ sub test_map_source_names {
 	is(Champlain::MapSourceFactory->OSM_MAPNIK, 'osm-mapnik');
 	is(Champlain::MapSourceFactory->OSM_OSMARENDER, 'osm-osmarender');
 	is(Champlain::MapSourceFactory->OSM_CYCLE_MAP, 'osm-cyclemap');
-	is(Champlain::MapSourceFactory->OAM, 'oam');
+	is(Champlain::MapSourceFactory->OAM, 'OpenAerialMap');
 	is(Champlain::MapSourceFactory->MFF_RELIEF, 'mff-relief');
+
+	if (Champlain::HAS_MEMPHIS) {
+		is(Champlain::MapSourceFactory->MEMPHIS_LOCAL_DESC, 'memphis-local');
+		is(Champlain::MapSourceFactory->MEMPHIS_NETWORK_DESC, 'memphis-network');
+	}
+	else {
+		SKIP: {
+			skip "Memphis not available", 2;
+		}
+	}
 }
 
 
@@ -69,10 +79,32 @@ sub test_map_factory {
 		Champlain::MapSourceFactory->MFF_RELIEF,
 		"Maps for Free Relief"
 	);
-	
+
+	if (Champlain::HAS_MEMPHIS) {
+		generic_create(
+			$factory,
+			Champlain::MapSourceFactory->MEMPHIS_LOCAL_DESC,
+			"OpenStreetMap Memphis Local Map"
+		);
+
+		generic_create(
+			$factory,
+			Champlain::MapSourceFactory->MEMPHIS_NETWORK_DESC,
+			"OpenStreetMap Memphis Network Map"
+		);
+	}
+	else {
+		SKIP: {
+			skip "No support for Memphis", 6;
+		};
+	}
+
 	# Get the maps available
 	my @maps = $factory->dup_list();
 	ok(@maps >= 5, "Maps factory has the default maps");
+
+	my $source = $factory->create_cached_source(Champlain::MapSourceFactory->MFF_RELIEF);
+	isa_ok($source, 'Champlain::MapSource');
 }
 
 
@@ -112,7 +144,7 @@ sub test_map_register {
 		is($desc->uri_format, $description->{uri_format}, "MapSourceDesc has the right uri_format");
 		isa_ok($data, 'Champlain::MapSourceFactory');
 
-		return Champlain::NetworkMapSource->new_full(
+		return Champlain::NetworkTileSource->new_full(
 			$desc->id,
 			$desc->name,
 			$desc->license,
@@ -139,7 +171,6 @@ sub test_map_register {
 	is($map->get_max_zoom_level, $description->{max_zoom_level}, "Created map has the right max_zoom_level");
 	is($map->get_projection, $description->{projection}, "Created map has the right projection");
 	is($map->get_tile_size, 256, "Created map has the right tile_size");
-	is($map->get_tile_uri(1, 2, 3), 'http://tile.openaerialmap.org/tiles/1.0.0/openaerialmap-900913/3/1/2.jpg', "Created map has the right tile_uri");
 }
 
 

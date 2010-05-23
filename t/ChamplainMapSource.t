@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Clutter::TestHelper tests => 177;
+use Clutter::TestHelper tests => 169;
 
 use Champlain qw(:coords :maps);
 
@@ -242,28 +242,27 @@ sub generic_map_operations {
 
 
 	# Check that min zoom level and max zoom level meters per pixel at different
-	SKIP: {
-		Champlain->CHECK_VERSION(0, 4, 3) or skip '0.4.3 stuff', 2;
-		my $meters_at_min = $map->get_meters_per_pixel($map->get_min_zoom_level, 0, 0);
-		ok($meters_at_min > 0, "Meters per pixel $meters_at_min at min zoom level");
+	my $meters_at_min = $map->get_meters_per_pixel($map->get_min_zoom_level, 0, 0);
+	ok($meters_at_min > 0, "Meters per pixel $meters_at_min at min zoom level");
 
-		my $meters_at_max = $map->get_meters_per_pixel($map->get_max_zoom_level, 0, 0);
-		ok($meters_at_max > 0, "Meters per pixel $meters_at_max at max zoom level");
+	my $meters_at_max = $map->get_meters_per_pixel($map->get_max_zoom_level, 0, 0);
+	ok($meters_at_max > 0, "Meters per pixel $meters_at_max at max zoom level");
 
-		ok($meters_at_max < $meters_at_min, "Meters per pixel are different at max/min zoom level");
-	}
+	ok($meters_at_max < $meters_at_min, "Meters per pixel are different at max/min zoom level");
 
 
 	my $tile = Champlain::Tile->new();
 	is($tile->get_size(), 0, "get_size() default tile");
-	is($tile->get_state(), 'init', "get_state() default tile");
-	is($tile->get_uri(), undef, "get_uri() default tile");
-	is($tile->get_filename(), undef, "get_filename() default tile");
+	is($tile->get_state(), 'none', "get_state() default tile");
 	$map->fill_tile($tile);
-	is($tile->get_size(), $map->get_tile_size, "size is filled");
-	is($tile->get_state(), 'loading', "state changed");
-	ok($tile->get_uri(), "uri is filled");
-	ok($tile->get_filename(),  "filename is filled");
+	is($tile->get_size(), 0, "size is filled");
+	is($tile->get_state(), 'none', "state changed");
+
+
+	is($map->get_next_source, undef, "get_next_source");
+	my $next_source = Champlain::FileCache->new();
+	$map->set_next_source($next_source);
+	is($map->get_next_source, $next_source, "set_next_source");
 }
 
 

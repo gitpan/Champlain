@@ -34,18 +34,6 @@ ChamplainState
 champlain_tile_get_state (ChamplainTile *self)
 
 
-const gchar*
-champlain_tile_get_uri (ChamplainTile *self)
-
-
-const gchar*
-champlain_tile_get_filename (ChamplainTile *self)
-
-
-ClutterActor*
-champlain_tile_get_actor (ChamplainTile *self)
-
-
 void
 champlain_tile_set_x (ChamplainTile *self, gint x)
 
@@ -64,14 +52,6 @@ champlain_tile_set_size (ChamplainTile *self, guint size)
 
 void
 champlain_tile_set_state (ChamplainTile *self, ChamplainState state)
-
-
-void
-champlain_tile_set_uri (ChamplainTile *self, const gchar* uri)
-
-
-void
-champlain_tile_set_filename (ChamplainTile *self, const gchar* filename)
 
 
 ClutterActor *
@@ -102,28 +82,8 @@ champlain_tile_get_modified_time (ChamplainTile *self)
 		}
 
 
-SV*
-champlain_tile_get_modified_time_string (ChamplainTile *self)
-	PREINIT:
-		gchar *string = NULL;
-
-	CODE:
-		string = champlain_tile_get_modified_time_string(self);
-		if (string) {
-			RETVAL = newSVpvn(string, 0);
-			g_free(string);
-		}
-		else {
-			RETVAL = &PL_sv_undef;
-		}
-
-	OUTPUT:
-		RETVAL
-
-
-
 void
-champlain_tile_set_content (ChamplainTile *self, ClutterActor* actor, gboolean fade_in)
+champlain_tile_set_content (ChamplainTile *self, ClutterActor* actor)
 
 
 void
@@ -161,3 +121,11 @@ champlain_tile_set_modified_time (ChamplainTile *self, ...)
 		}
 
 		champlain_tile_set_modified_time(self, &modified_time);
+
+
+void
+champlain_tile_set_fade_in (ChamplainTile *self, gboolean fade_in)
+
+
+gboolean
+champlain_tile_get_fade_in (ChamplainTile *self)

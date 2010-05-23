@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Clutter::TestHelper tests => 88;
+use Clutter::TestHelper tests => 87;
 
 use Champlain ':coords';
 
@@ -12,6 +12,9 @@ exit tests();
 
 
 sub tests {
+	my $stage = Clutter::Stage->get_default();
+	$stage->set_size(400, 400);
+
 	test_go_to();
 	test_ensure_visible();
 	test_ensure_markers_visible();
@@ -46,11 +49,7 @@ sub test_generic {
 	# Can't be tested but at least we check that it doesn't crash when invoked
 	my $layer = Champlain::Layer->new();
 	$view->add_layer($layer);
-
-	SKIP: {
-		Champlain->CHECK_VERSION(0, 4, 1) or skip '0.4.1 stuff', 0;
-		$view->remove_layer($layer);
-	}
+	$view->remove_layer($layer);
 	
 	# Change the map source (get a different map source)
 	my $factory = Champlain::MapSourceFactory->dup_default();
@@ -106,39 +105,36 @@ sub test_generic {
 	ok(!$view->get_keep_center_on_resize, "get_keep_center_on_resize()");
 	
 	
-	# Call ensure_visible(), it's to test, but at least we test that it doesn't crash
+	# Call ensure_visible(), it's hard to test, but at least we check that it doesn't crash
 	$view->ensure_visible(10, 10, 30, 30, TRUE);
 
 
-	SKIP: {
-		Champlain->CHECK_VERSION(0, 4, 3) or skip '0.4.3 stuff', 2;
-		$view->set_license_text("Perl Universal License");
-		is($view->get_license_text, "Perl Universal License", "set_license_text(text)");
+	$view->set_license_text("Perl Universal License");
+	is($view->get_license_text, "Perl Universal License", "set_license_text(text)");
 
-		$view->set_license_text(undef);
-		is($view->get_license_text, undef, "set_license_text(undef)");
+	$view->set_license_text(undef);
+	is($view->get_license_text, undef, "set_license_text(undef)");
 
 
-		$view->set_max_scale_width(200);
-		is($view->get_max_scale_width, 200, "set_max_scale_width(200)");
+	$view->set_max_scale_width(200);
+	is($view->get_max_scale_width, 200, "set_max_scale_width(200)");
 
-		$view->set_max_scale_width(400);
-		is($view->get_max_scale_width, 400, "set_max_scale_width(400)");
-
-
-		$view->set_scale_unit('miles');
-		is($view->get_scale_unit, 'miles', "set_max_scale_width('miles')");
-
-		$view->set_scale_unit('km');
-		is($view->get_scale_unit, 'km', "set_max_scale_width('km')");
+	$view->set_max_scale_width(400);
+	is($view->get_max_scale_width, 400, "set_max_scale_width(400)");
 
 
-		$view->set_show_scale(TRUE);
-		is($view->get_show_scale, TRUE, "set_show_scale(TRUE)");
+	$view->set_scale_unit('miles');
+	is($view->get_scale_unit, 'miles', "set_max_scale_width('miles')");
 
-		$view->set_show_scale(FALSE);
-		is($view->get_show_scale, FALSE, "set_show_scale(FALSE)");
-	}
+	$view->set_scale_unit('km');
+	is($view->get_scale_unit, 'km', "set_max_scale_width('km')");
+
+
+	$view->set_show_scale(TRUE);
+	is($view->get_show_scale, TRUE, "set_show_scale(TRUE)");
+
+	$view->set_show_scale(FALSE);
+	is($view->get_show_scale, FALSE, "set_show_scale(FALSE)");
 }
 
 
@@ -253,9 +249,11 @@ sub test_event {
 	# NOTE: At the moment this works only if the view is in a stage and if
 	# show_all() was called
 	my $stage = Clutter::Stage->get_default();
+	$stage->remove_all();
 	$view->set_size($size, $size);
 	$view->center_on(0, 0);
 	$stage->add($view);
+	$stage->show_all();
 	
 	# Create a fake event in the middle of the tile
 	my $event = Clutter::Event->new('button_press');
@@ -266,12 +264,12 @@ sub test_event {
 	is($event->y, $middle, "Fake event is in the middle (y)");
 
 	my ($latitude, $longitude) = $view->get_coords_from_event($event);
-	ok($latitude >= -2.0 && $latitude <= 2.0, "get_coords_from_event() latitude");
-	ok($longitude >= -2.0 && $longitude <= 2.0, "get_coords_from_event() longitude");
+	ok($latitude >= -2.0 && $latitude <= 2.0, "get_coords_from_event() latitude ($latitude)");
+	ok($longitude >= -2.0 && $longitude <= 2.0, "get_coords_from_event() longitude ($longitude)");
 
 	($latitude, $longitude) = $view->get_coords_at($event->x, $event->y);
-	ok($latitude >= -2.0 && $latitude <= 2.0, "get_coords_at() latitude");
-	ok($longitude >= -2.0 && $longitude <= 2.0, "get_coords_at() longitude");
+	ok($latitude >= -2.0 && $latitude <= 2.0, "get_coords_at() latitude ($latitude)");
+	ok($longitude >= -2.0 && $longitude <= 2.0, "get_coords_at() longitude ($longitude)");
 }
 
 
@@ -281,6 +279,12 @@ sub test_event {
 sub test_go_to {
 	my $view = Champlain::View->new();
 	isa_ok($view, 'Champlain::View');
+
+	my $stage = Clutter::Stage->get_default();
+	$stage->remove_all();
+	$view->set_size($stage->get_size);
+	$stage->add($view);
+	$stage->show_all();
 
 	# Set a proper zoom-level otherwise the test will fail because we would be
 	# zoomed in Antartica.
@@ -294,8 +298,7 @@ sub test_go_to {
 	
 	# Go to a different place
 	my ($latitude, $longitude) = (48.218611, 17.146397);
-	$view->go_to($latitude, $longitude);
-	run_animation_loop($view);
+	run_animation_loop($view, sub { $view->go_to($latitude, $longitude); });
 	
 	# Check if we got somewhere close to desired location
 	is_view_near($view, $latitude, $longitude);
@@ -307,11 +310,10 @@ sub test_go_to {
 	
 	# Go to a different place. This is too fast and can't be tested properly.
 	$view->go_to($latitude, $longitude);
-	Glib::Idle->add(sub {$view->stop_go_to()});
-	run_animation_loop($view);
-
-	is($view->get('latitude'), 0, "stop_go_to() at latitude 0");
-	is($view->get('longitude'), 0, "stop_go_to() at longitude 0");
+	my $stop_called;
+	$view->signal_connect('animation-completed::go-to', sub { $stop_called = 1 });
+	run_animation_loop($view, sub { Glib::Idle->add(sub {$view->stop_go_to()}); });
+	ok($stop_called, "stop_go_to called");
 }
 
 
@@ -354,13 +356,14 @@ sub test_ensure_visible {
 	my (@marker1) = (48.218611, 17.146397);
 	my (@marker2) = (48.21066, 16.31476);
 
-	# Must start the animations from the event loop
-	Glib::Idle->add(sub {
-		diag("Start ensure visible");
-		$view->ensure_visible(@marker1, @marker2, TRUE);
-		return FALSE;
+	run_animation_loop($view, sub {
+		# Must start the animations from the event loop
+		Glib::Idle->add(sub {
+			diag("Start ensure visible");
+			$view->ensure_visible(@marker1, @marker2, TRUE);
+			return FALSE;
+		});
 	});
-	run_animation_loop($view);
 	
 	# Check if we got somewhere close to the middle of the markers
 	my $middle_latitude = ($marker1[0] + $marker2[0]) / 2;
@@ -373,8 +376,17 @@ sub test_ensure_visible {
 # Test ensure_markers_visible().
 #
 sub test_ensure_markers_visible {
+
+	# Must add the view to a stage and give a size for this test
+	my $stage = Clutter::Stage->get_default();
+	$stage->remove_all();
+
 	my $view = Champlain::View->new();
 	isa_ok($view, 'Champlain::View');
+
+	$stage->add($view);
+	$view->set_size($stage->get_size);
+
 
 	# Place the view in the center and zoomed
 	$view->center_on(0, 0);
@@ -396,13 +408,11 @@ sub test_ensure_markers_visible {
 	}
 	$view->add_layer($layer);
 
-	# Must add the view to a stage and give a size for this test
-	my $stage = Clutter::Stage->get_default();
-	$stage->add($view);
-	$view->set_size(400, 400);
+	# Must display the stage otherwise the test will fail
+	$stage->show_all();
+	$stage->hide_all();
 
-	$view->ensure_markers_visible(\@markers, TRUE);
-	run_animation_loop($view);
+	run_animation_loop($view, sub { $view->ensure_markers_visible(\@markers, TRUE); });
 	
 	# Check if we got somewhere close to the middle of the markers
 	is_view_near($view, 48.0, 16.5, 5.0);
@@ -423,8 +433,15 @@ sub is_view_near {
 	my $delta_latitude = $current_latitude - $latitude;
 	my $delta_longitude = $current_longitude - $longitude;
 	my $tester = Test::Builder->new();
-	$tester->ok($delta_latitude >= -$delta && $delta_latitude <= $delta, "ensure_visible() changed latitude close enough (delta: $delta_latitude)");
-	$tester->ok($delta_longitude >= -$delta && $delta_longitude <= $delta, "ensure_visible() changed longitude close enough (delta: $delta_longitude)");
+	$tester->ok(
+		$delta_latitude >= -$delta && $delta_latitude <= $delta,
+		"ensure_visible() changed latitude close enough (delta: $delta_latitude; +/-$delta; $current_latitude ~ $latitude)"
+	);
+
+	$tester->ok(
+		$delta_longitude >= -$delta && $delta_longitude <= $delta,
+		"ensure_visible() changed longitude close enough (delta: $delta_longitude; +/-$delta; $current_longitude ~ $longitude)"
+	);
 }
 
 
@@ -441,16 +458,19 @@ sub create_marker {
 # timed in case where the test doesn't work.
 #
 sub run_animation_loop {
-	my ($view) = @_;
+	my ($view, $code) = @_;
 
-	if (!$view->get_stage) {
-		my $stage = Clutter::Stage->get_default();
+	my $stage = $view->get_stage;
+	if (!$stage) {
+		$stage = Clutter::Stage->get_default();
+		$stage->remove_all();
 		$stage->add($view);
-		$stage->set_size(400, 400);
 		$view->set_size($stage->get_size);
-		#$stage->show_all();
 	}
+	$stage->show_all();
+	$stage->hide_all() unless @ARGV;
 
+	$code->();
 
 	# Give us a bit of time to get there since this is an animation and it
 	# requires an event loop. We add an idle timeout in order to make sure that

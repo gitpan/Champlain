@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Champlain
-version:             0.11
+version:             0.12
 abstract:            Map rendering canvas
 license:             perl, lgpl
 author:              
@@ -8,7 +8,8 @@ author:
 generated_by:        ExtUtils::MakeMaker version 6.42
 distribution_type:   module
 requires:     
-    Clutter:                       1.0000
+    Clutter:                       1.000
+    Memphis:                       0.01
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html
     version: 1.3
